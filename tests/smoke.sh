@@ -15,4 +15,12 @@ printf '%s\n' "$dirty" | grep -q 'Malformed rows:  1'
 printf '%s\n' "$dirty" | grep -q 'Missing required cells:  2'
 printf '%s\n' "$dirty" | grep -q 'Duplicate IDs:  1'
 printf '%s\n' "$dirty" | grep -q 'Invalid amounts:  2'
+
+set +e
+headers=$(CSV_AUDIT_FILE=examples/bad-headers.csv ./csv-audit)
+status=$?
+set -e
+test "$status" -eq 2
+printf '%s\n' "$headers" | grep -q 'Blank column names:  1'
+printf '%s\n' "$headers" | grep -q 'Duplicate column names:  1'
 echo 'Smoke test passed'

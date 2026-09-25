@@ -8,6 +8,8 @@ pub struct Result:
     pub missing: int = 0
     pub duplicate_ids: int = 0
     pub columns: int = 0
+    pub blank_headers: int = 0
+    pub duplicate_headers: int = 0
 end
 
 // Audit the shape and completeness of a CSV export. The first column is a
@@ -17,6 +19,25 @@ pub func Inspect(t: csv.CSVTable): Result:
     if t.rows.len() == 0: ret result end
     result.columns = t.rows.get(0).fields.len()
     if result.columns == 0: ret result end
+    header := t.rows.get(0).fields
+    mut column := 0
+    until column < result.columns:
+        name := header.get(column).trim()
+        if name.len() == 0:
+            result.blank_headers += 1
+        else:
+            mut previous := 0
+            mut repeated := false
+            until previous < column:
+                if header.get(previous).trim().lower() == name.lower():
+                    repeated = true
+                end
+                previous += 1
+            end
+            if repeated: result.duplicate_headers += 1 end
+        end
+        column += 1
+    end
     mut row := 1
     until row < t.rows.len():
         fields := t.rows.get(row).fields

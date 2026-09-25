@@ -24,6 +24,8 @@ func main:
     money := amounts.Inspect(table, "amount")
     println "CSV audit: ", path
     println "Columns: ", quality.columns
+    println "Blank column names: ", quality.blank_headers
+    println "Duplicate column names: ", quality.duplicate_headers
     println "Records: ", quality.records
     println "Malformed rows: ", quality.malformed
     println "Missing required cells: ", quality.missing
@@ -36,7 +38,7 @@ func main:
         println "Maximum amount: ", money.maximum
         println "Average amount: ", money.total / (money.count as f64)
     end
-    if quality.malformed > 0 || quality.missing > 0 || quality.duplicate_ids > 0 || money.invalid > 0:
+    if quality.blank_headers > 0 || quality.duplicate_headers > 0 || quality.malformed > 0 || quality.missing > 0 || quality.duplicate_ids > 0 || money.invalid > 0:
         ret 2
     end
     ret 0
