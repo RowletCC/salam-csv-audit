@@ -46,7 +46,9 @@ pub func Inspect(t: csv.CSVTable, name: str): Result:
     mut index := -1
     mut col := 0
     until col < header.len():
-        if header.get(col).trim().lower() == name.lower(): index = col end
+        // Keep the first matching column when a malformed header repeats it.
+        // The header audit reports the duplication separately.
+        if index < 0 && header.get(col).trim().lower() == name.lower(): index = col end
         col += 1
     end
     if index < 0: ret result end
