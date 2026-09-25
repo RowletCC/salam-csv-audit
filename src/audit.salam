@@ -50,12 +50,13 @@ pub func Inspect(t: csv.CSVTable): Result:
             end
             col += 1
         end
-        if fields.len() > 0 && fields.get(0).len() > 0:
+        if fields.len() > 0 && fields.get(0).trim().len() > 0:
+            id := fields.get(0).trim()
             mut earlier := 1
             mut found := false
             until earlier < row:
                 other := t.rows.get(earlier).fields
-                if other.len() > 0 && other.get(0) == fields.get(0):
+                if other.len() > 0 && other.get(0).trim() == id:
                     found = true
                 end
                 earlier += 1

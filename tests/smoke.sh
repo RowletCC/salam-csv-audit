@@ -23,4 +23,11 @@ set -e
 test "$status" -eq 2
 printf '%s\n' "$headers" | grep -q 'Blank column names:  1'
 printf '%s\n' "$headers" | grep -q 'Duplicate column names:  1'
+
+set +e
+ids=$(CSV_AUDIT_FILE=examples/spaced-ids.csv ./csv-audit)
+status=$?
+set -e
+test "$status" -eq 2
+printf '%s\n' "$ids" | grep -q 'Duplicate IDs:  1'
 echo 'Smoke test passed'
