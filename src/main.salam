@@ -32,6 +32,9 @@ func main:
     println "Duplicate IDs: ", quality.duplicate_ids
     println "Valid amounts: ", money.count
     println "Invalid amounts: ", money.invalid
+    println "Negative amounts: ", money.negative
+    println "Zero amounts: ", money.zero
+    println "Positive amounts: ", money.positive
     println "Total amount: ", money.total
     if money.count > 0:
         println "Minimum amount: ", money.minimum

@@ -30,4 +30,10 @@ status=$?
 set -e
 test "$status" -eq 2
 printf '%s\n' "$ids" | grep -q 'Duplicate IDs:  1'
+
+signed=$(CSV_AUDIT_FILE=examples/signed-amounts.csv ./csv-audit)
+printf '%s\n' "$signed" | grep -q 'Negative amounts:  1'
+printf '%s\n' "$signed" | grep -q 'Zero amounts:  1'
+printf '%s\n' "$signed" | grep -q 'Positive amounts:  1'
+printf '%s\n' "$signed" | grep -q 'Total amount:  5'
 echo 'Smoke test passed'

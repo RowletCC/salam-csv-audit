@@ -6,6 +6,9 @@ import str
 pub struct Result:
     pub count: int = 0
     pub invalid: int = 0
+    pub negative: int = 0
+    pub zero: int = 0
+    pub positive: int = 0
     pub total: f64 = 0.0
     pub minimum: f64 = 0.0
     pub maximum: f64 = 0.0
@@ -54,6 +57,15 @@ pub func Inspect(t: csv.CSVTable, name: str): Result:
             result.invalid += 1
         else:
             value := str.ToFloat(fields.get(index))
+            if value < 0.0:
+                result.negative += 1
+            else:
+                if value > 0.0:
+                    result.positive += 1
+                else:
+                    result.zero += 1
+                end
+            end
             if result.count == 0 || value < result.minimum: result.minimum = value end
             if result.count == 0 || value > result.maximum: result.maximum = value end
             result.total += value
