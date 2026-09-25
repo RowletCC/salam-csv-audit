@@ -1,0 +1,47 @@
+package audit
+
+import encoding.csv
+
+pub struct Result:
+    pub records: int = 0
+    pub malformed: int = 0
+    pub missing: int = 0
+    pub duplicate_ids: int = 0
+    pub columns: int = 0
+end
+
+// Audit the shape and completeness of a CSV export. The first column is a
+// record ID; repeating it is reported separately from malformed rows.
+pub func Inspect(t: csv.CSVTable): Result:
+    mut result := Result {}
+    if t.rows.len() == 0: ret result end
+    result.columns = t.rows.get(0).fields.len()
+    if result.columns == 0: ret result end
+    mut row := 1
+    until row < t.rows.len():
+        fields := t.rows.get(row).fields
+        result.records += 1
+        if fields.len() != result.columns: result.malformed += 1 end
+        mut col := 0
+        until col < result.columns:
+            if col >= fields.len() || fields.get(col).trim().len() == 0:
+                result.missing += 1
+            end
+            col += 1
+        end
+        if fields.len() > 0 && fields.get(0).len() > 0:
+            mut earlier := 1
+            mut found := false
+            until earlier < row:
+                other := t.rows.get(earlier).fields
+                if other.len() > 0 && other.get(0) == fields.get(0):
+                    found = true
+                end
+                earlier += 1
+            end
+            if found: result.duplicate_ids += 1 end
+        end
+        row += 1
+    end
+    ret result
+end

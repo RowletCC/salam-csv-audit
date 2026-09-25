@@ -1,0 +1,43 @@
+package main
+
+import encoding.csv
+import fs.file
+import os
+import audit "audit.salam"
+import amounts "amounts.salam"
+
+func main:
+    mut path := os.Env("CSV_AUDIT_FILE")
+    if path.len() == 0: path = "examples/expenses.csv" end
+    if !file.Exists(path):
+        println "Input file not found: ", path
+        ret 1
+    end
+    text := file.ReadText(path)
+    mut table := csv.ReadAll(text)
+    defer csv.FreeTable(table)
+    if table.rows.len() == 0:
+        println "Input has no CSV rows"
+        ret 1
+    end
+    quality := audit.Inspect(table)
+    money := amounts.Inspect(table, "amount")
+    println "CSV audit: ", path
+    println "Columns: ", quality.columns
+    println "Records: ", quality.records
+    println "Malformed rows: ", quality.malformed
+    println "Missing required cells: ", quality.missing
+    println "Duplicate IDs: ", quality.duplicate_ids
+    println "Valid amounts: ", money.count
+    println "Invalid amounts: ", money.invalid
+    println "Total amount: ", money.total
+    if money.count > 0:
+        println "Minimum amount: ", money.minimum
+        println "Maximum amount: ", money.maximum
+        println "Average amount: ", money.total / (money.count as f64)
+    end
+    if quality.malformed > 0 || quality.missing > 0 || quality.duplicate_ids > 0 || money.invalid > 0:
+        ret 2
+    end
+    ret 0
+end

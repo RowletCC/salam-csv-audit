@@ -1,0 +1,65 @@
+package amounts
+
+import encoding.csv
+import str
+
+pub struct Result:
+    pub count: int = 0
+    pub invalid: int = 0
+    pub total: f64 = 0.0
+    pub minimum: f64 = 0.0
+    pub maximum: f64 = 0.0
+end
+
+// A strict decimal checker keeps bad amount cells out of the aggregates.
+// An optional sign and one decimal point are accepted.
+pub func IsDecimal(raw: str): bool:
+    value := raw.trim()
+    if value.len() == 0: ret false end
+    mut digits := 0
+    mut points := 0
+    mut i := 0
+    until i < value.len():
+        c := value.substr(i, 1)
+        if c == ".":
+            points += 1
+        else:
+            if c >= "0" && c <= "9":
+                digits += 1
+            else:
+                if !(i == 0 && (c == "-" || c == "+")): ret false end
+            end
+        end
+        i += 1
+    end
+    ret digits > 0 && points <= 1
+end
+
+// Look for a named amount column; calculate statistics over valid cells only.
+pub func Inspect(t: csv.CSVTable, name: str): Result:
+    mut result := Result {}
+    if t.rows.len() == 0: ret result end
+    header := t.rows.get(0).fields
+    mut index := -1
+    mut col := 0
+    until col < header.len():
+        if header.get(col).trim().lower() == name.lower(): index = col end
+        col += 1
+    end
+    if index < 0: ret result end
+    mut row := 1
+    until row < t.rows.len():
+        fields := t.rows.get(row).fields
+        if index >= fields.len() || !IsDecimal(fields.get(index)):
+            result.invalid += 1
+        else:
+            value := str.ToFloat(fields.get(index))
+            if result.count == 0 || value < result.minimum: result.minimum = value end
+            if result.count == 0 || value > result.maximum: result.maximum = value end
+            result.total += value
+            result.count += 1
+        end
+        row += 1
+    end
+    ret result
+end
